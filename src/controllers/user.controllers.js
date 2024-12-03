@@ -45,13 +45,12 @@ const deleteUser = async (req, res) => {
     try {
         const { userId } = req.body
 
-        const existedUser = await User.find({ _id: userId })
-        if (existedUser.length) {
+        const deletedUser = await User.findOneAndDelete({ _id: userId })
+        if (deletedUser) {
             await User.deleteOne({ _id: existedUser[0]._id })
-            res.status(200).json({ message: "User deleted successfully." })
+            res.status(200).json({ message: "User deleted successfully.", deletedUser })
         } else {
             res.status(404).json({ message: "No user found." })
-            return
         }
     } catch (error) {
         console.log('error :>> ', error.message);
@@ -62,14 +61,12 @@ const deleteUser = async (req, res) => {
 const updateUser = async (req, res) => {
     try {
         const { userName, email, userId } = req.body
-
         await User.findOneAndUpdate(
             { _id: userId },
             { $set: { userName, email } },
             { upsert: true, new: true },
         );
         res.status(200).json({ message: "User update successfully." })
-        return
 
     } catch (error) {
         console.log('error :>> ', error.message);

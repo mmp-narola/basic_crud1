@@ -3,10 +3,9 @@ const User = require("../models/user.model");
 const getUsers = async (req, res) => {
     try {
         const users = await User.find({})
-        res.status(200).json({ users })
+        res.success({ data: users })
     } catch (error) {
-        console.log('error :>> ', error.message);
-        res.status(500).json({ message: error.message })
+        res.error({ statusCode: 500, message: error.message })
     }
 }
 
@@ -14,10 +13,13 @@ const getUserById = async (req, res) => {
     try {
         const { userId } = req.params
         const user = await User.find({ _id: userId })
-        res.status(200).json({ user })
+        if (user?.length) {
+            res.success({ data: user })
+        } else {
+            res.error({ message: "No User found with this id." })
+        }
     } catch (error) {
-        console.log('error :>> ', error.message);
-        res.status(500).json({ message: error.message })
+        res.error({ statusCode: 500, message: error.message })
     }
 }
 
@@ -27,17 +29,15 @@ const postUser = async (req, res) => {
         const { userName, email } = req.body
 
         const existedUser = await User.find({ $or: [{ userName: userName }, { email: email }] })
-        if (existedUser.length) {
-            res.status(404).json({ message: "User is already existed." })
-            return
+        if (existedUser?.length) {
+            return res.error({ message: "User is already existed." })
         }
 
         const result = await User.create(user)
-        res.status(200).json({ user: result })
+        res.success({ data: result, message: "User added successfully." })
 
     } catch (error) {
-        console.log('error :>> ', error.message);
-        res.status(500).json({ message: error.message })
+        res.error({ statusCode: 500, message: error.message })
     }
 }
 
@@ -47,30 +47,30 @@ const deleteUser = async (req, res) => {
 
         const deletedUser = await User.findOneAndDelete({ _id: userId })
         if (deletedUser) {
-            await User.deleteOne({ _id: existedUser[0]._id })
-            res.status(200).json({ message: "User deleted successfully.", deletedUser })
+            res.success({ message: "User deleted successfully.", data: [deletedUser] })
         } else {
-            res.status(404).json({ message: "No user found." })
+            res.error({ message: "No user found." })
         }
     } catch (error) {
-        console.log('error :>> ', error.message);
-        res.status(500).json({ message: error.message })
+        res.error({ statusCode: 500, message: error.message })
     }
 }
 
 const updateUser = async (req, res) => {
     try {
         const { userName, email, userId } = req.body
-        await User.findOneAndUpdate(
+        const updatedUser = await User.findOneAndUpdate(
             { _id: userId },
             { $set: { userName, email } },
             { upsert: true, new: true },
         );
-        res.status(200).json({ message: "User update successfully." })
-
+        if ([updatedUser].length) {
+            return res.success({ message: "User update successfully.", data: [updatedUser] })
+        } else {
+            return res.error({ message: "User not found with this id." })
+        }
     } catch (error) {
-        console.log('error :>> ', error.message);
-        res.status(500).json({ message: error.message })
+        res.error({ statusCode: 500, message: error.message })
     }
 }
 

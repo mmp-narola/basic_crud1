@@ -1,4 +1,5 @@
 const responseFormatter = (req, res, next) => {
+
     res.success = (data) => {
         res.status(data?.statusCode || 200).json({
             success: true,
@@ -9,7 +10,7 @@ const responseFormatter = (req, res, next) => {
     res.error = (data) => {
         res.status(data?.statusCode || 404).json({
             success: false,
-            message: data.message || "Something went wrong!!!",
+            error: data.error || "Something went wrong!!!",
             data: data?.data ?? null,
         })
     }

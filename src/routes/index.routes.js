@@ -4,6 +4,6 @@ const router = express.Router()
 
 router.use('/product', require("./e-commerce/product.routes"))
 router.use('/category', require("./e-commerce/productCategory.routes"))
-router.use('/appuser', require("./e-commerce/user.routes"))
+router.use('/auth', require("./e-commerce/user.routes"))
 
 module.exports = router
